@@ -5,7 +5,7 @@ import { auth, app } from './firebase'
 import Auth from './components/Auth'
 import './App.css'
 import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
+import 'jspdf-autotable' // This import adds autoTable to jsPDF prototype
 
 const db = getFirestore(app)
 
@@ -78,16 +78,42 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
 
   // PDF Generation Function
   const generatePDF = async () => {
+    // Set loading state
+    setIsGeneratingPDF(true)
+    
     try {
+      // Validate libraries are available
+      if (!jsPDF) {
+        throw new Error('jsPDF library not available. Please refresh the page and try again.')
+      }
+      
+      // Test autoTable availability
+      const testDoc = new jsPDF()
+      if (typeof testDoc.autoTable !== 'function') {
+        throw new Error('jsPDF autoTable plugin not properly loaded. Please refresh the page and try again.')
+      }
+      
       console.log('Starting PDF generation...')
       console.log('Profile:', profile)
       console.log('Certs:', certs)
       console.log('Courses:', courses)
       
       const doc = new jsPDF()
+      
+      // Add PDF metadata
+      const userName = profile?.fullName || user?.displayName || 'CertiHub User'
+      doc.setProperties({
+        title: `${userName} - CertiHub Portfolio`,
+        subject: 'Professional Portfolio with Certifications and Courses',
+        author: userName,
+        keywords: 'portfolio, certifications, courses, professional, resume',
+        creator: 'CertiHub - Growth & Validation Platform'
+      })
+      
       const pageWidth = doc.internal.pageSize.getWidth()
       const pageHeight = doc.internal.pageSize.getHeight()
       let yPos = 20
@@ -102,31 +128,36 @@ function App() {
         return false
       }
 
-      // Header with profile
+      // Enhanced Header with better styling
       doc.setFillColor(37, 99, 235)
-      doc.rect(0, 0, pageWidth, 40, 'F')
+      doc.rect(0, 0, pageWidth, 45, 'F')
       doc.setTextColor(255, 255, 255)
-      doc.setFontSize(24)
+      doc.setFontSize(28)
       doc.setFont('helvetica', 'bold')
-      doc.text('CERTIHUB PORTFOLIO', pageWidth / 2, 20, { align: 'center' })
-      doc.setFontSize(10)
-      doc.text('Growth & Validation Profile', pageWidth / 2, 30, { align: 'center' })
+      doc.text('CERTIHUB PORTFOLIO', pageWidth / 2, 22, { align: 'center' })
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'normal')
+      doc.text('Growth & Validation Profile', pageWidth / 2, 35, { align: 'center' })
 
-      yPos = 50
+      yPos = 60
 
-      // Profile Section
+      // Profile Section with enhanced styling
       doc.setTextColor(0, 0, 0)
-      doc.setFontSize(16)
+      doc.setFontSize(18)
       doc.setFont('helvetica', 'bold')
       doc.text('PROFESSIONAL PROFILE', 20, yPos)
-      yPos += 10
+      // Add underline
+      doc.setLineWidth(0.5)
+      doc.line(20, yPos + 2, 120, yPos + 2)
+      yPos += 15
 
       doc.setFontSize(10)
       doc.setFont('helvetica', 'normal')
       
+      // Enhanced profile data with better fallbacks
       const profileData = [
-        ['Full Name', profile?.fullName || user.displayName || 'N/A'],
-        ['Email', user.email || 'N/A'],
+        ['Full Name', profile?.fullName || user?.displayName || 'N/A'],
+        ['Email', user?.email || 'N/A'],
         ['Institution', profile?.college || 'N/A'],
         ['Major', profile?.major || 'N/A'],
         ['Degree', profile?.degree || 'N/A'],
@@ -134,61 +165,81 @@ function App() {
         ['CGPA', profile?.gpa || 'N/A']
       ]
 
-      doc.autoTable({
-        startY: yPos,
-        head: [],
-        body: profileData,
-        theme: 'grid',
-        styles: { fontSize: 10, cellPadding: 5 },
-        columnStyles: {
-          0: { fontStyle: 'bold', fillColor: [240, 240, 240], cellWidth: 50 },
-          1: { cellWidth: 'auto' }
-        }
-      })
+      // Only include rows with meaningful data
+      const filteredProfileData = profileData.filter(([key, value]) => value && value !== 'N/A')
+      
+      if (filteredProfileData.length > 0) {
+        doc.autoTable({
+          startY: yPos,
+          head: [],
+          body: filteredProfileData,
+          theme: 'grid',
+          styles: { fontSize: 10, cellPadding: 5 },
+          columnStyles: {
+            0: { fontStyle: 'bold', fillColor: [240, 240, 240], cellWidth: 50 },
+            1: { cellWidth: 'auto' }
+          }
+        })
+        yPos = doc.lastAutoTable.finalY + 15
+      } else {
+        // If no profile data, add a placeholder
+        doc.setFontSize(9)
+        doc.setTextColor(128, 128, 128)
+        doc.text('No profile information available', 20, yPos)
+        yPos += 15
+        doc.setTextColor(0, 0, 0)
+      }
 
-      yPos = doc.lastAutoTable.finalY + 15
-
-      // Bio Section
+      // Bio Section with enhanced styling
       if (profile?.bio) {
-        checkPageBreak(30)
-        doc.setFontSize(12)
+        checkPageBreak(35)
+        doc.setFontSize(16)
         doc.setFont('helvetica', 'bold')
         doc.text('ABOUT ME', 20, yPos)
-        yPos += 8
-        doc.setFontSize(9)
+        // Add underline
+        doc.setLineWidth(0.5)
+        doc.line(20, yPos + 2, 70, yPos + 2)
+        yPos += 12
+        doc.setFontSize(10)
         doc.setFont('helvetica', 'normal')
         const bioLines = doc.splitTextToSize(profile.bio, pageWidth - 40)
         doc.text(bioLines, 20, yPos)
-        yPos += bioLines.length * 5 + 10
+        yPos += bioLines.length * 5 + 15
       }
 
-      // Social Links
+      // Social Links with enhanced styling
       if (profile?.github || profile?.linkedin) {
-        checkPageBreak(20)
-        doc.setFontSize(12)
+        checkPageBreak(25)
+        doc.setFontSize(16)
         doc.setFont('helvetica', 'bold')
         doc.text('SOCIAL LINKS', 20, yPos)
-        yPos += 8
-        doc.setFontSize(9)
+        // Add underline
+        doc.setLineWidth(0.5)
+        doc.line(20, yPos + 2, 85, yPos + 2)
+        yPos += 12
+        doc.setFontSize(10)
         doc.setFont('helvetica', 'normal')
         if (profile?.github) {
           doc.textWithLink('GitHub: ' + profile.github, 20, yPos, { url: profile.github })
-          yPos += 6
+          yPos += 7
         }
         if (profile?.linkedin) {
           doc.textWithLink('LinkedIn: ' + profile.linkedin, 20, yPos, { url: profile.linkedin })
-          yPos += 6
+          yPos += 7
         }
         yPos += 10
       }
 
-      // Academic Records
+      // Academic Records with enhanced styling
       if (profile?.semesters && profile.semesters.length > 0) {
-        checkPageBreak(40)
-        doc.setFontSize(14)
+        checkPageBreak(45)
+        doc.setFontSize(16)
         doc.setFont('helvetica', 'bold')
         doc.text('ACADEMIC RECORDS', 20, yPos)
-        yPos += 10
+        // Add underline
+        doc.setLineWidth(0.5)
+        doc.line(20, yPos + 2, 120, yPos + 2)
+        yPos += 15
 
         const semesterData = profile.semesters.map((sem, idx) => [
           `Semester ${idx + 1}`,
@@ -201,124 +252,245 @@ function App() {
           head: [['Semester', 'SGPA', 'Credits']],
           body: semesterData,
           theme: 'striped',
-          headStyles: { fillColor: [37, 99, 235], textColor: 255 },
-          styles: { fontSize: 9, cellPadding: 4 }
+          headStyles: { fillColor: [37, 99, 235], textColor: 255, fontSize: 11, fontStyle: 'bold' },
+          styles: { fontSize: 10, cellPadding: 6 },
+          alternateRowStyles: { fillColor: [248, 250, 252] }
         })
 
-        yPos = doc.lastAutoTable.finalY + 15
+        yPos = doc.lastAutoTable.finalY + 20
       }
 
-      // Certifications Section
-      if (certs && certs.length > 0) {
-        checkPageBreak(40)
-        doc.setFontSize(14)
-        doc.setFont('helvetica', 'bold')
-        doc.text('CERTIFICATIONS', 20, yPos)
-        yPos += 10
+      // Certifications Section with enhanced styling
+      checkPageBreak(45)
+      doc.setFontSize(16)
+      doc.setFont('helvetica', 'bold')
+      doc.text('CERTIFICATIONS', 20, yPos)
+      // Add underline
+      doc.setLineWidth(0.5)
+      doc.line(20, yPos + 2, 100, yPos + 2)
+      yPos += 15
 
+      if (certs && certs.length > 0) {
         for (const cert of certs) {
           checkPageBreak(50)
           
-          // Add certificate image if available
+          // Add certificate image with improved handling
+          let hasImage = false
           if (cert.certificateImage) {
             try {
-              const imgData = cert.certificateImage
-              doc.addImage(imgData, 'JPEG', 20, yPos, 60, 40)
+              // Validate image data
+              if (typeof cert.certificateImage === 'string' && cert.certificateImage.startsWith('data:image/')) {
+                const imgData = cert.certificateImage
+                // Better image positioning and sizing
+                doc.addImage(imgData, 'JPEG', 20, yPos, 70, 45)
+                hasImage = true
+              } else {
+                console.warn('Invalid certificate image data for:', cert.title)
+              }
             } catch (e) {
-              console.log('Could not add cert image:', e)
+              console.warn('Could not add certificate image for:', cert.title, e.message)
+              // Continue without the image
             }
           }
 
-          doc.setFontSize(11)
+          // Adjust text positioning based on image presence
+          const textX = hasImage ? 95 : 20
+          const contentWidth = hasImage ? pageWidth - 115 : pageWidth - 40
+
+          doc.setFontSize(12)
           doc.setFont('helvetica', 'bold')
-          doc.text(cert.title || 'Untitled', cert.certificateImage ? 85 : 20, yPos + 5)
+          const titleLines = doc.splitTextToSize(cert.title || 'Untitled Certificate', contentWidth)
+          doc.text(titleLines, textX, yPos + 8)
           
-          doc.setFontSize(9)
+          let textY = yPos + 8 + (titleLines.length * 5)
+          
+          doc.setFontSize(10)
           doc.setFont('helvetica', 'normal')
-          doc.text(`Issuer: ${cert.issuer || 'N/A'}`, cert.certificateImage ? 85 : 20, yPos + 12)
-          doc.text(`Date: ${cert.month || ''} ${cert.year || ''}`, cert.certificateImage ? 85 : 20, yPos + 18)
+          doc.text(`Issuer: ${cert.issuer || 'N/A'}`, textX, textY + 6)
+          doc.text(`Date: ${cert.month || ''} ${cert.year || 'N/A'}`, textX, textY + 12)
           
           if (cert.skills) {
-            doc.text(`Skills: ${cert.skills}`, cert.certificateImage ? 85 : 20, yPos + 24)
+            const skillsText = `Skills: ${cert.skills}`
+            const skillsLines = doc.splitTextToSize(skillsText, contentWidth)
+            doc.text(skillsLines, textX, textY + 18)
+            textY += skillsLines.length * 5
           }
           
           if (cert.link) {
             doc.setTextColor(37, 99, 235)
-            doc.textWithLink('Verify Certificate', cert.certificateImage ? 85 : 20, yPos + 30, { url: cert.link })
+            doc.textWithLink('🔗 Verify Certificate', textX, textY + 24, { url: cert.link })
             doc.setTextColor(0, 0, 0)
           }
 
-          yPos += cert.certificateImage ? 50 : 40
+          yPos += hasImage ? 55 : 45
         }
+      } else {
+        // No certifications available
+        doc.setFontSize(9)
+        doc.setTextColor(128, 128, 128)
+        doc.text('No certifications recorded yet', 20, yPos)
+        yPos += 20
+        doc.setTextColor(0, 0, 0)
       }
 
-      // Skill Courses Section
-      if (courses && courses.length > 0) {
-        checkPageBreak(40)
-        doc.setFontSize(14)
-        doc.setFont('helvetica', 'bold')
-        doc.text('SKILL COURSES', 20, yPos)
-        yPos += 10
+      // Skill Courses Section with enhanced styling
+      checkPageBreak(45)
+      doc.setFontSize(16)
+      doc.setFont('helvetica', 'bold')
+      doc.text('SKILL COURSES', 20, yPos)
+      // Add underline
+      doc.setLineWidth(0.5)
+      doc.line(20, yPos + 2, 95, yPos + 2)
+      yPos += 15
 
+      if (courses && courses.length > 0) {
         for (const course of courses) {
           checkPageBreak(50)
           
-          // Add course image if available
+          // Add course image with improved handling
+          let hasImage = false
           if (course.certificateImage) {
             try {
-              const imgData = course.certificateImage
-              doc.addImage(imgData, 'JPEG', 20, yPos, 60, 40)
+              // Validate image data
+              if (typeof course.certificateImage === 'string' && course.certificateImage.startsWith('data:image/')) {
+                const imgData = course.certificateImage
+                // Better image positioning and sizing
+                doc.addImage(imgData, 'JPEG', 20, yPos, 70, 45)
+                hasImage = true
+              } else {
+                console.warn('Invalid course image data for:', course.title)
+              }
             } catch (e) {
-              console.log('Could not add course image:', e)
+              console.warn('Could not add course image for:', course.title, e.message)
+              // Continue without the image
             }
           }
 
-          doc.setFontSize(11)
+          // Adjust text positioning based on image presence
+          const textX = hasImage ? 95 : 20
+          const contentWidth = hasImage ? pageWidth - 115 : pageWidth - 40
+
+          doc.setFontSize(12)
           doc.setFont('helvetica', 'bold')
-          doc.text(course.title || 'Untitled', course.certificateImage ? 85 : 20, yPos + 5)
+          const titleLines = doc.splitTextToSize(course.title || 'Untitled Course', contentWidth)
+          doc.text(titleLines, textX, yPos + 8)
           
-          doc.setFontSize(9)
+          let textY = yPos + 8 + (titleLines.length * 5)
+          
+          doc.setFontSize(10)
           doc.setFont('helvetica', 'normal')
-          doc.text(`Platform: ${course.platform || 'N/A'}`, course.certificateImage ? 85 : 20, yPos + 12)
-          doc.text(`Date: ${course.month || ''} ${course.year || ''}`, course.certificateImage ? 85 : 20, yPos + 18)
+          doc.text(`Platform: ${course.platform || 'N/A'}`, textX, textY + 6)
+          doc.text(`Date: ${course.month || ''} ${course.year || 'N/A'}`, textX, textY + 12)
           
           if (course.skills) {
-            doc.text(`Skills: ${course.skills}`, course.certificateImage ? 85 : 20, yPos + 24)
+            const skillsText = `Skills: ${course.skills}`
+            const skillsLines = doc.splitTextToSize(skillsText, contentWidth)
+            doc.text(skillsLines, textX, textY + 18)
+            textY += skillsLines.length * 5
           }
           
           if (course.link) {
             doc.setTextColor(37, 99, 235)
-            doc.textWithLink('View Course', course.certificateImage ? 85 : 20, yPos + 30, { url: course.link })
+            doc.textWithLink('🔗 View Course', textX, textY + 24, { url: course.link })
             doc.setTextColor(0, 0, 0)
           }
 
-          yPos += course.certificateImage ? 50 : 40
+          yPos += hasImage ? 55 : 45
         }
+      } else {
+        // No courses available
+        doc.setFontSize(9)
+        doc.setTextColor(128, 128, 128)
+        doc.text('No skill courses recorded yet', 20, yPos)
+        yPos += 20
+        doc.setTextColor(0, 0, 0)
       }
 
-      // Footer
+      // Enhanced Footer with metadata
       const totalPages = doc.internal.getNumberOfPages()
+      const currentDate = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      })
+      
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i)
+        
+        // Footer background
+        doc.setFillColor(248, 250, 252)
+        doc.rect(0, pageHeight - 25, pageWidth, 25, 'F')
+        
+        // Footer content
         doc.setFontSize(8)
-        doc.setTextColor(128, 128, 128)
-        doc.text(
-          `Generated from Certihub - Page ${i} of ${totalPages}`,
-          pageWidth / 2,
-          pageHeight - 10,
-          { align: 'center' }
-        )
+        doc.setTextColor(100, 116, 139)
+        doc.setFont('helvetica', 'normal')
+        
+        // Left side - Generation info
+        doc.text(`Generated from CertiHub on ${currentDate}`, 20, pageHeight - 12)
+        
+        // Right side - Page numbers
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth - 20, pageHeight - 12, { align: 'right' })
+        
+        // Center - User info
+        const userName = profile?.fullName || user?.displayName || 'CertiHub User'
+        doc.text(`${userName}'s Portfolio`, pageWidth / 2, pageHeight - 12, { align: 'center' })
       }
 
-      // Save the PDF
-      const fileName = `${profile?.fullName || 'Portfolio'}_Certihub_${new Date().toISOString().split('T')[0]}.pdf`
+      // Enhanced filename generation with validation
+      const generateSafeFilename = () => {
+        // Get user's full name with fallback
+        let baseName = profile?.fullName || user?.displayName || 'Portfolio'
+        
+        // Clean the name for filename compatibility
+        baseName = baseName
+          .replace(/[^a-zA-Z0-9\s-_]/g, '') // Remove special characters
+          .replace(/\s+/g, '_') // Replace spaces with underscores
+          .substring(0, 50) // Limit length
+        
+        // Ensure we have a valid name
+        if (!baseName || baseName.length < 1) {
+          baseName = 'Portfolio'
+        }
+        
+        // Generate ISO date (YYYY-MM-DD)
+        const currentDate = new Date().toISOString().split('T')[0]
+        
+        // Construct filename
+        return `${baseName}_CertiHub_${currentDate}.pdf`
+      }
+
+      const fileName = generateSafeFilename()
       console.log('Saving PDF as:', fileName)
       doc.save(fileName)
       console.log('PDF saved successfully!')
       showSuccess('PDF exported successfully! 📄')
     } catch (error) {
       console.error('Error generating PDF:', error)
-      alert('Failed to generate PDF: ' + error.message)
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        userDataAvailable: {
+          user: !!user,
+          profile: !!profile,
+          certs: certs?.length || 0,
+          courses: courses?.length || 0
+        }
+      })
+      
+      // Show user-friendly error message
+      let userMessage = 'Failed to generate PDF. '
+      if (error.message.includes('jsPDF')) {
+        userMessage += 'Please refresh the page and try again.'
+      } else if (error.message.includes('autoTable')) {
+        userMessage += 'PDF table generation failed. Please refresh the page and try again.'
+      } else if (error.message.includes('image')) {
+        userMessage += 'Some images could not be processed, but the PDF should still generate.'
+      } else {
+        userMessage += 'Please try again or contact support if the issue persists.'
+      }
+      
+      alert(userMessage)
     }
   }
 
