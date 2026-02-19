@@ -587,12 +587,6 @@ function App() {
           <button 
             className="nav-item"
             onClick={() => { generatePDF(); setIsSidebarOpen(false); }}
-            style={{ 
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              color: 'white',
-              marginTop: '0.5rem',
-              border: '2px solid #10b981'
-            }}
           >
             <span className="nav-icon">📄</span>
             EXPORT PDF
