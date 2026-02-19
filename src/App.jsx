@@ -5,7 +5,7 @@ import { auth, app } from './firebase'
 import Auth from './components/Auth'
 import './App.css'
 import jsPDF from 'jspdf'
-import 'jspdf-autotable'
+import autoTable from 'jspdf-autotable'
 
 const db = getFirestore(app)
 
