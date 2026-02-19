@@ -81,233 +81,245 @@ function App() {
 
   // PDF Generation Function
   const generatePDF = async () => {
-    const doc = new jsPDF()
-    const pageWidth = doc.internal.pageSize.getWidth()
-    const pageHeight = doc.internal.pageSize.getHeight()
-    let yPos = 20
+    try {
+      console.log('Starting PDF generation...')
+      console.log('Profile:', profile)
+      console.log('Certs:', certs)
+      console.log('Courses:', courses)
+      
+      const doc = new jsPDF()
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const pageHeight = doc.internal.pageSize.getHeight()
+      let yPos = 20
 
-    // Helper function to add new page if needed
-    const checkPageBreak = (requiredSpace) => {
-      if (yPos + requiredSpace > pageHeight - 20) {
-        doc.addPage()
-        yPos = 20
-        return true
+      // Helper function to add new page if needed
+      const checkPageBreak = (requiredSpace) => {
+        if (yPos + requiredSpace > pageHeight - 20) {
+          doc.addPage()
+          yPos = 20
+          return true
+        }
+        return false
       }
-      return false
-    }
 
-    // Header with profile
-    doc.setFillColor(37, 99, 235)
-    doc.rect(0, 0, pageWidth, 40, 'F')
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(24)
-    doc.setFont('helvetica', 'bold')
-    doc.text('CERTIHUB PORTFOLIO', pageWidth / 2, 20, { align: 'center' })
-    doc.setFontSize(10)
-    doc.text('Growth & Validation Profile', pageWidth / 2, 30, { align: 'center' })
-
-    yPos = 50
-
-    // Profile Section
-    doc.setTextColor(0, 0, 0)
-    doc.setFontSize(16)
-    doc.setFont('helvetica', 'bold')
-    doc.text('PROFESSIONAL PROFILE', 20, yPos)
-    yPos += 10
-
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'normal')
-    
-    const profileData = [
-      ['Full Name', profile?.fullName || user.displayName || 'N/A'],
-      ['Email', user.email || 'N/A'],
-      ['Institution', profile?.college || 'N/A'],
-      ['Major', profile?.major || 'N/A'],
-      ['Degree', profile?.degree || 'N/A'],
-      ['Graduation Year', profile?.gradYear || 'N/A'],
-      ['CGPA', profile?.gpa || 'N/A']
-    ]
-
-    doc.autoTable({
-      startY: yPos,
-      head: [],
-      body: profileData,
-      theme: 'grid',
-      styles: { fontSize: 10, cellPadding: 5 },
-      columnStyles: {
-        0: { fontStyle: 'bold', fillColor: [240, 240, 240], cellWidth: 50 },
-        1: { cellWidth: 'auto' }
-      }
-    })
-
-    yPos = doc.lastAutoTable.finalY + 15
-
-    // Bio Section
-    if (profile?.bio) {
-      checkPageBreak(30)
-      doc.setFontSize(12)
+      // Header with profile
+      doc.setFillColor(37, 99, 235)
+      doc.rect(0, 0, pageWidth, 40, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(24)
       doc.setFont('helvetica', 'bold')
-      doc.text('ABOUT ME', 20, yPos)
-      yPos += 8
-      doc.setFontSize(9)
-      doc.setFont('helvetica', 'normal')
-      const bioLines = doc.splitTextToSize(profile.bio, pageWidth - 40)
-      doc.text(bioLines, 20, yPos)
-      yPos += bioLines.length * 5 + 10
-    }
+      doc.text('CERTIHUB PORTFOLIO', pageWidth / 2, 20, { align: 'center' })
+      doc.setFontSize(10)
+      doc.text('Growth & Validation Profile', pageWidth / 2, 30, { align: 'center' })
 
-    // Social Links
-    if (profile?.github || profile?.linkedin) {
-      checkPageBreak(20)
-      doc.setFontSize(12)
-      doc.setFont('helvetica', 'bold')
-      doc.text('SOCIAL LINKS', 20, yPos)
-      yPos += 8
-      doc.setFontSize(9)
-      doc.setFont('helvetica', 'normal')
-      if (profile?.github) {
-        doc.textWithLink('GitHub: ' + profile.github, 20, yPos, { url: profile.github })
-        yPos += 6
-      }
-      if (profile?.linkedin) {
-        doc.textWithLink('LinkedIn: ' + profile.linkedin, 20, yPos, { url: profile.linkedin })
-        yPos += 6
-      }
-      yPos += 10
-    }
+      yPos = 50
 
-    // Academic Records
-    if (profile?.semesters && profile.semesters.length > 0) {
-      checkPageBreak(40)
-      doc.setFontSize(14)
+      // Profile Section
+      doc.setTextColor(0, 0, 0)
+      doc.setFontSize(16)
       doc.setFont('helvetica', 'bold')
-      doc.text('ACADEMIC RECORDS', 20, yPos)
+      doc.text('PROFESSIONAL PROFILE', 20, yPos)
       yPos += 10
 
-      const semesterData = profile.semesters.map((sem, idx) => [
-        `Semester ${idx + 1}`,
-        sem.sgpa || 'N/A',
-        sem.credits || 'N/A'
-      ])
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'normal')
+      
+      const profileData = [
+        ['Full Name', profile?.fullName || user.displayName || 'N/A'],
+        ['Email', user.email || 'N/A'],
+        ['Institution', profile?.college || 'N/A'],
+        ['Major', profile?.major || 'N/A'],
+        ['Degree', profile?.degree || 'N/A'],
+        ['Graduation Year', profile?.gradYear || 'N/A'],
+        ['CGPA', profile?.gpa || 'N/A']
+      ]
 
       doc.autoTable({
         startY: yPos,
-        head: [['Semester', 'SGPA', 'Credits']],
-        body: semesterData,
-        theme: 'striped',
-        headStyles: { fillColor: [37, 99, 235], textColor: 255 },
-        styles: { fontSize: 9, cellPadding: 4 }
+        head: [],
+        body: profileData,
+        theme: 'grid',
+        styles: { fontSize: 10, cellPadding: 5 },
+        columnStyles: {
+          0: { fontStyle: 'bold', fillColor: [240, 240, 240], cellWidth: 50 },
+          1: { cellWidth: 'auto' }
+        }
       })
 
       yPos = doc.lastAutoTable.finalY + 15
-    }
 
-    // Certifications Section
-    if (certs && certs.length > 0) {
-      checkPageBreak(40)
-      doc.setFontSize(14)
-      doc.setFont('helvetica', 'bold')
-      doc.text('CERTIFICATIONS', 20, yPos)
-      yPos += 10
-
-      for (const cert of certs) {
-        checkPageBreak(50)
-        
-        // Add certificate image if available
-        if (cert.certificateImage) {
-          try {
-            const imgData = cert.certificateImage
-            doc.addImage(imgData, 'JPEG', 20, yPos, 60, 40)
-          } catch (e) {
-            console.log('Could not add image:', e)
-          }
-        }
-
-        doc.setFontSize(11)
+      // Bio Section
+      if (profile?.bio) {
+        checkPageBreak(30)
+        doc.setFontSize(12)
         doc.setFont('helvetica', 'bold')
-        doc.text(cert.title || 'Untitled', cert.certificateImage ? 85 : 20, yPos + 5)
-        
+        doc.text('ABOUT ME', 20, yPos)
+        yPos += 8
         doc.setFontSize(9)
         doc.setFont('helvetica', 'normal')
-        doc.text(`Issuer: ${cert.issuer || 'N/A'}`, cert.certificateImage ? 85 : 20, yPos + 12)
-        doc.text(`Date: ${cert.month || ''} ${cert.year || ''}`, cert.certificateImage ? 85 : 20, yPos + 18)
-        
-        if (cert.skills) {
-          doc.text(`Skills: ${cert.skills}`, cert.certificateImage ? 85 : 20, yPos + 24)
-        }
-        
-        if (cert.link) {
-          doc.setTextColor(37, 99, 235)
-          doc.textWithLink('Verify Certificate', cert.certificateImage ? 85 : 20, yPos + 30, { url: cert.link })
-          doc.setTextColor(0, 0, 0)
-        }
-
-        yPos += cert.certificateImage ? 50 : 40
+        const bioLines = doc.splitTextToSize(profile.bio, pageWidth - 40)
+        doc.text(bioLines, 20, yPos)
+        yPos += bioLines.length * 5 + 10
       }
-    }
 
-    // Skill Courses Section
-    if (courses && courses.length > 0) {
-      checkPageBreak(40)
-      doc.setFontSize(14)
-      doc.setFont('helvetica', 'bold')
-      doc.text('SKILL COURSES', 20, yPos)
-      yPos += 10
-
-      for (const course of courses) {
-        checkPageBreak(50)
-        
-        // Add course image if available
-        if (course.certificateImage) {
-          try {
-            const imgData = course.certificateImage
-            doc.addImage(imgData, 'JPEG', 20, yPos, 60, 40)
-          } catch (e) {
-            console.log('Could not add image:', e)
-          }
-        }
-
-        doc.setFontSize(11)
+      // Social Links
+      if (profile?.github || profile?.linkedin) {
+        checkPageBreak(20)
+        doc.setFontSize(12)
         doc.setFont('helvetica', 'bold')
-        doc.text(course.title || 'Untitled', course.certificateImage ? 85 : 20, yPos + 5)
-        
+        doc.text('SOCIAL LINKS', 20, yPos)
+        yPos += 8
         doc.setFontSize(9)
         doc.setFont('helvetica', 'normal')
-        doc.text(`Platform: ${course.platform || 'N/A'}`, course.certificateImage ? 85 : 20, yPos + 12)
-        doc.text(`Date: ${course.month || ''} ${course.year || ''}`, course.certificateImage ? 85 : 20, yPos + 18)
-        
-        if (course.skills) {
-          doc.text(`Skills: ${course.skills}`, course.certificateImage ? 85 : 20, yPos + 24)
+        if (profile?.github) {
+          doc.textWithLink('GitHub: ' + profile.github, 20, yPos, { url: profile.github })
+          yPos += 6
         }
-        
-        if (course.link) {
-          doc.setTextColor(37, 99, 235)
-          doc.textWithLink('View Course', course.certificateImage ? 85 : 20, yPos + 30, { url: course.link })
-          doc.setTextColor(0, 0, 0)
+        if (profile?.linkedin) {
+          doc.textWithLink('LinkedIn: ' + profile.linkedin, 20, yPos, { url: profile.linkedin })
+          yPos += 6
         }
-
-        yPos += course.certificateImage ? 50 : 40
+        yPos += 10
       }
-    }
 
-    // Footer
-    const totalPages = doc.internal.getNumberOfPages()
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i)
-      doc.setFontSize(8)
-      doc.setTextColor(128, 128, 128)
-      doc.text(
-        `Generated from Certihub - Page ${i} of ${totalPages}`,
-        pageWidth / 2,
-        pageHeight - 10,
-        { align: 'center' }
-      )
-    }
+      // Academic Records
+      if (profile?.semesters && profile.semesters.length > 0) {
+        checkPageBreak(40)
+        doc.setFontSize(14)
+        doc.setFont('helvetica', 'bold')
+        doc.text('ACADEMIC RECORDS', 20, yPos)
+        yPos += 10
 
-    // Save the PDF
-    const fileName = `${profile?.fullName || 'Portfolio'}_Certihub_${new Date().toISOString().split('T')[0]}.pdf`
-    doc.save(fileName)
-    showSuccess('PDF exported successfully! 📄')
+        const semesterData = profile.semesters.map((sem, idx) => [
+          `Semester ${idx + 1}`,
+          sem.sgpa || 'N/A',
+          sem.credits || 'N/A'
+        ])
+
+        doc.autoTable({
+          startY: yPos,
+          head: [['Semester', 'SGPA', 'Credits']],
+          body: semesterData,
+          theme: 'striped',
+          headStyles: { fillColor: [37, 99, 235], textColor: 255 },
+          styles: { fontSize: 9, cellPadding: 4 }
+        })
+
+        yPos = doc.lastAutoTable.finalY + 15
+      }
+
+      // Certifications Section
+      if (certs && certs.length > 0) {
+        checkPageBreak(40)
+        doc.setFontSize(14)
+        doc.setFont('helvetica', 'bold')
+        doc.text('CERTIFICATIONS', 20, yPos)
+        yPos += 10
+
+        for (const cert of certs) {
+          checkPageBreak(50)
+          
+          // Add certificate image if available
+          if (cert.certificateImage) {
+            try {
+              const imgData = cert.certificateImage
+              doc.addImage(imgData, 'JPEG', 20, yPos, 60, 40)
+            } catch (e) {
+              console.log('Could not add cert image:', e)
+            }
+          }
+
+          doc.setFontSize(11)
+          doc.setFont('helvetica', 'bold')
+          doc.text(cert.title || 'Untitled', cert.certificateImage ? 85 : 20, yPos + 5)
+          
+          doc.setFontSize(9)
+          doc.setFont('helvetica', 'normal')
+          doc.text(`Issuer: ${cert.issuer || 'N/A'}`, cert.certificateImage ? 85 : 20, yPos + 12)
+          doc.text(`Date: ${cert.month || ''} ${cert.year || ''}`, cert.certificateImage ? 85 : 20, yPos + 18)
+          
+          if (cert.skills) {
+            doc.text(`Skills: ${cert.skills}`, cert.certificateImage ? 85 : 20, yPos + 24)
+          }
+          
+          if (cert.link) {
+            doc.setTextColor(37, 99, 235)
+            doc.textWithLink('Verify Certificate', cert.certificateImage ? 85 : 20, yPos + 30, { url: cert.link })
+            doc.setTextColor(0, 0, 0)
+          }
+
+          yPos += cert.certificateImage ? 50 : 40
+        }
+      }
+
+      // Skill Courses Section
+      if (courses && courses.length > 0) {
+        checkPageBreak(40)
+        doc.setFontSize(14)
+        doc.setFont('helvetica', 'bold')
+        doc.text('SKILL COURSES', 20, yPos)
+        yPos += 10
+
+        for (const course of courses) {
+          checkPageBreak(50)
+          
+          // Add course image if available
+          if (course.certificateImage) {
+            try {
+              const imgData = course.certificateImage
+              doc.addImage(imgData, 'JPEG', 20, yPos, 60, 40)
+            } catch (e) {
+              console.log('Could not add course image:', e)
+            }
+          }
+
+          doc.setFontSize(11)
+          doc.setFont('helvetica', 'bold')
+          doc.text(course.title || 'Untitled', course.certificateImage ? 85 : 20, yPos + 5)
+          
+          doc.setFontSize(9)
+          doc.setFont('helvetica', 'normal')
+          doc.text(`Platform: ${course.platform || 'N/A'}`, course.certificateImage ? 85 : 20, yPos + 12)
+          doc.text(`Date: ${course.month || ''} ${course.year || ''}`, course.certificateImage ? 85 : 20, yPos + 18)
+          
+          if (course.skills) {
+            doc.text(`Skills: ${course.skills}`, course.certificateImage ? 85 : 20, yPos + 24)
+          }
+          
+          if (course.link) {
+            doc.setTextColor(37, 99, 235)
+            doc.textWithLink('View Course', course.certificateImage ? 85 : 20, yPos + 30, { url: course.link })
+            doc.setTextColor(0, 0, 0)
+          }
+
+          yPos += course.certificateImage ? 50 : 40
+        }
+      }
+
+      // Footer
+      const totalPages = doc.internal.getNumberOfPages()
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i)
+        doc.setFontSize(8)
+        doc.setTextColor(128, 128, 128)
+        doc.text(
+          `Generated from Certihub - Page ${i} of ${totalPages}`,
+          pageWidth / 2,
+          pageHeight - 10,
+          { align: 'center' }
+        )
+      }
+
+      // Save the PDF
+      const fileName = `${profile?.fullName || 'Portfolio'}_Certihub_${new Date().toISOString().split('T')[0]}.pdf`
+      console.log('Saving PDF as:', fileName)
+      doc.save(fileName)
+      console.log('PDF saved successfully!')
+      showSuccess('PDF exported successfully! 📄')
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      alert('Failed to generate PDF: ' + error.message)
+    }
   }
 
   const showSuccess = (message) => {
