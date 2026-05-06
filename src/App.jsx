@@ -1727,7 +1727,33 @@ function EntryForm({ type, onSubmit, onCancel }) {
   const currentYear = new Date().getFullYear()
   const years = Array.from({length: 12}, (_, i) => (currentYear - i).toString())
   
-  const platforms = ['AWS', 'Google', 'Microsoft', 'Coursera', 'Udemy', 'edX', 'LinkedIn', 'Meta', 'IBM', 'Oracle', 'Cisco', 'CompTIA', 'NPTEL', 'Udacity', 'Pluralsight', 'Other']
+  const platforms = [
+    // School & Tech
+    'School & Studies',
+    'Coding & Tech Skills',
+    'Research & Writing',
+    'Inventions & Patents',
+    // Helping Others & Leadership
+    'Volunteering & Charity',
+    'Club Leadership',
+    'Teaching & Mentoring',
+    'Community & Civic Work',
+    // Contests & Business
+    'Coding Contests',
+    'College Events & Conferences',
+    'Project Exhibitions',
+    'Business & Startups',
+    // Sports & Creativity
+    'Sports & Fitness',
+    'Photos & Videos',
+    'Creative Writing',
+    'Graphic & App Design',
+    // Work & Life Skills
+    'Internships & Job Training',
+    'Languages',
+    'Public Speaking',
+    'Planning & Organizing'
+  ]
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]
@@ -1803,7 +1829,7 @@ function EntryForm({ type, onSubmit, onCancel }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-              {type === 'certification' ? 'Issuing Body *' : 'Platform *'}
+              {type === 'certification' ? 'Issuing Body *' : 'Category *'}
             </label>
             <select
               required
@@ -1811,7 +1837,7 @@ function EntryForm({ type, onSubmit, onCancel }) {
               onChange={(e) => setFormData({...formData, [type === 'certification' ? 'issuer' : 'platform']: e.target.value})}
               style={{ width: '100%', padding: '1rem', borderRadius: '12px', border: '2px solid #e2e8f0', fontSize: '1rem', fontWeight: 600, cursor: 'pointer' }}
             >
-              <option value="">Select Platform</option>
+              <option value="">Select Category</option>
               {platforms.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
