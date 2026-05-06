@@ -888,12 +888,12 @@ function OverviewSection({ user, certs, courses, profile, onPreview }) {
         <div className="hero-content">
           <h1 className="hero-title">Hi, {profile?.fullName?.split(' ')[0] || user.displayName?.split(' ')[0] || 'Growth Mindset'}!</h1>
           <p className="hero-text">
-            You've successfully logged <span style={{ fontWeight: 800 }}>{certs.length} certifications</span> and <span style={{ fontWeight: 800 }}>{courses.length} courses</span>. Keep pushing forward!
+            <span style={{ fontWeight: 800 }}>{certs.length} certifications</span> and <span style={{ fontWeight: 800 }}>{courses.length} courses</span>
           </p>
         </div>
       </div>
 
-      <div className="stats-grid">
+      <div className="stats-grid" style={{ gridTemplateColumns: '1fr' }}>
         <div className="stat-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             <span className="stat-icon" style={{ fontSize: '2rem' }}>💬</span>
@@ -902,73 +902,6 @@ function OverviewSection({ user, certs, courses, profile, onPreview }) {
           <p style={{ fontSize: '1.25rem', fontWeight: 700, fontStyle: 'italic', color: '#475569', lineHeight: 1.6 }}>
             "{randomQuote}"
           </p>
-        </div>
-        
-        <div className="stat-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-            <span className="stat-icon" style={{ fontSize: '2rem' }}>📊</span>
-            <h3 style={{ fontSize: '0.875rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Skill Distribution</h3>
-          </div>
-          {skillDistribution.length > 0 ? (
-            <div style={{ width: '100%' }}>
-              {skillDistribution.map(([skill, count]) => {
-                const info = getPlatformInfo(skill)
-                const percentage = ((count / (certs.length + courses.length)) * 100).toFixed(0)
-                return (
-                  <div key={skill} style={{ marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ fontSize: '0.875rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span>{info.emoji}</span>
-                        {skill}
-                      </span>
-                      <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#64748b' }}>{count}</span>
-                    </div>
-                    <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{ width: `${percentage}%`, height: '100%', background: info.color, borderRadius: '4px', transition: 'width 0.3s' }} />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <p style={{ fontSize: '0.875rem', color: '#94a3b8' }}>No data yet. Start adding achievements!</p>
-          )}
-        </div>
-        
-        <div className="stat-card" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-            <span className="stat-icon" style={{ fontSize: '2rem' }}>🏆</span>
-            <h3 style={{ fontSize: '0.875rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recent Wins</h3>
-          </div>
-          {certs.length > 0 ? (
-            <div style={{ width: '100%' }}>
-              {certs.slice(0, 2).map(cert => {
-                const info = getPlatformInfo(cert.issuer)
-                return (
-                  <div key={cert.id} style={{ marginBottom: '0.75rem', padding: '0.75rem', background: info.bg, borderRadius: '12px', cursor: 'pointer', border: `2px solid ${info.color}20` }}
-                    onClick={() => cert.certificateImage && onPreview(cert.certificateImage)}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                      <span style={{ fontSize: '1.25rem' }}>{info.emoji}</span>
-                      <p style={{ fontWeight: 700, fontSize: '0.875rem' }}>{cert.title}</p>
-                    </div>
-                    <p style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600, marginLeft: '2rem' }}>{cert.issuer}</p>
-                    {cert.link && (
-                      <a href={cert.link} target="_blank" rel="noopener noreferrer" 
-                        style={{ fontSize: '0.75rem', color: info.color, fontWeight: 700, marginLeft: '2rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem' }}
-                        onClick={(e) => e.stopPropagation()}>
-                        ✓ Verify Certificate
-                      </a>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '12px', border: '2px dashed #cbd5e1' }}>
-              <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '0.5rem' }}>No achievements yet</p>
-              <p style={{ fontSize: '0.75rem', color: '#cbd5e1' }}>Add your first certification to get started!</p>
-            </div>
-          )}
         </div>
       </div>
     </div>
