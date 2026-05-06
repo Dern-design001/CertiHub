@@ -1441,7 +1441,7 @@ function CertificationsSection({ items, onDelete, onPreview, setFormOpen }) {
     <div className="section">
       <div className="section-header">
         <div>
-          <h2>Certs</h2>
+          <h2>Certifications</h2>
           <p className="subtitle">GROWTH & VALIDATION</p>
         </div>
         <button onClick={setFormOpen} className="btn-primary">+ RECORD WIN</button>
