@@ -88,7 +88,7 @@ VITE_FIREBASE_APP_ID=1:263800699154:web:6f5019fe4107ddb3011bcb
 
 After deployment, you'll have:
 
-✅ **Live URL**: `https://certihub-xyz.vercel.app`
+✅ **Live URL**: `https://certi-hub-mu.vercel.app`
 ✅ **Automatic Deployments**: Every GitHub push triggers a new deployment
 ✅ **HTTPS**: Secure connection by default
 ✅ **Global CDN**: Fast loading worldwide
@@ -144,7 +144,7 @@ git push
 **Your Project:**
 - Local: http://localhost:5174/
 - GitHub: https://github.com/YOUR_USERNAME/certihub (after you create it)
-- Vercel: https://certihub-xyz.vercel.app (after deployment)
+- Vercel: https://certi-hub-mu.vercel.app (Live Deployment)
 
 **Services:**
 - GitHub: https://github.com

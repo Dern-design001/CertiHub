@@ -635,7 +635,7 @@ certihub/
 
 ### Current Setup:
 - **Local Development**: http://localhost:5174
-- **Production**: Vercel (your custom URL)
+- **Production**: https://certi-hub-mu.vercel.app (Live Deployment)
 - **Database**: Firebase Firestore
 - **Authentication**: Firebase Auth
 - **CDN**: Vercel Edge Network
@@ -691,7 +691,7 @@ certihub/
 ✅ **Smart Recognition** - Platform logos and color coding
 ✅ **Secure & Private** - Firebase authentication and security rules
 ✅ **Easy to Use** - Intuitive interface with helpful feedback
-✅ **Fully Deployed** - Live on Vercel with global CDN
+✅ **Fully Deployed** - Live at https://certi-hub-mu.vercel.app
 ✅ **Well Documented** - 20+ guide files for every aspect
 
 **Perfect for students who want to:**
